@@ -464,7 +464,7 @@ const words = [
   },
 ];
 
-const STORAGE_KEY = "palabra-del-dia-progress-v2";
+const STORAGE_KEY = "palabra-del-dia-progress-v4";
 
 function getTodayKey() {
   const now = new Date();
@@ -548,34 +548,66 @@ function daysBetween(dateA, dateB) {
   return Math.round((b - a) / (1000 * 60 * 60 * 24));
 }
 
-function StatCard({ title, value, subtitle }) {
+function glassCard(extra = {}) {
+  return {
+    background: "rgba(255,255,255,0.08)",
+    border: "1px solid rgba(255,255,255,0.08)",
+    borderRadius: 24,
+    boxShadow: "0 12px 30px rgba(0,0,0,0.18)",
+    ...extra,
+  };
+}
+
+function SectionTitle({ children, presentationMode = false }) {
   return (
-    <div
+    <h2
       style={{
-        background: "rgba(255,255,255,0.08)",
-        border: "1px solid rgba(255,255,255,0.08)",
-        borderRadius: 22,
-        padding: 18,
+        marginTop: 0,
+        marginBottom: 14,
+        fontSize: presentationMode ? 30 : 24,
+        letterSpacing: "-0.02em",
       }}
     >
-      <div style={{ color: "#cfd6f6", fontSize: 13, marginBottom: 6 }}>{title}</div>
-      <div style={{ fontSize: 28, fontWeight: 800 }}>{value}</div>
-      {subtitle && <div style={{ color: "#cfd6f6", marginTop: 6 }}>{subtitle}</div>}
+      {children}
+    </h2>
+  );
+}
+
+function StatCard({ title, value, subtitle, accent, presentationMode = false }) {
+  return (
+    <div
+      style={glassCard({
+        padding: presentationMode ? 22 : 18,
+        background: `linear-gradient(180deg, ${accent || "rgba(255,255,255,0.08)"}, rgba(255,255,255,0.05))`,
+      })}
+    >
+      <div style={{ color: "#d6ddff", fontSize: presentationMode ? 16 : 13, marginBottom: 6 }}>
+        {title}
+      </div>
+      <div style={{ fontSize: presentationMode ? 38 : 30, fontWeight: 900 }}>{value}</div>
+      {subtitle && (
+        <div style={{ color: "#d6ddff", marginTop: 6, lineHeight: 1.5, fontSize: presentationMode ? 16 : 14 }}>
+          {subtitle}
+        </div>
+      )}
     </div>
   );
 }
 
-function InfoBox({ title, children }) {
+function InfoBox({ title, children, icon, presentationMode = false }) {
   return (
     <div
-      style={{
-        background: "rgba(255,255,255,0.08)",
-        borderRadius: 18,
-        padding: 16,
-      }}
+      style={glassCard({
+        padding: presentationMode ? 20 : 16,
+      })}
     >
-      <div style={{ fontWeight: 800, marginBottom: 8 }}>{title}</div>
-      <div style={{ color: "#e8eeff", lineHeight: 1.6 }}>{children}</div>
+      <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
+        <span style={{ fontSize: presentationMode ? 22 : 18 }}>{icon}</span>
+        <div style={{ fontWeight: 800, fontSize: presentationMode ? 20 : 16 }}>{title}</div>
+      </div>
+      <div style={{ color: "#e8eeff", lineHeight: 1.6, fontSize: presentationMode ? 20 : 16 }}>
+        {children}
+      </div>
     </div>
   );
 }
@@ -586,12 +618,12 @@ export default function App() {
   const [message, setMessage] = useState("");
   const [selectedOption, setSelectedOption] = useState(null);
   const [challengeFeedback, setChallengeFeedback] = useState("");
+  const [presentationMode, setPresentationMode] = useState(false);
 
   useEffect(() => {
     const timer = setInterval(() => {
       setTodayKey(getTodayKey());
     }, 60 * 1000);
-
     return () => clearInterval(timer);
   }, []);
 
@@ -691,7 +723,7 @@ export default function App() {
       updateProgress(updated);
       setChallengeFeedback("✅ ¡Correcto! Habéis ganado 5 puntos extra.");
     } else {
-      setChallengeFeedback("❌ No es correcta. Podéis seguir hablando de la palabra y volver a intentarlo mañana.");
+      setChallengeFeedback("❌ No es correcta. Podéis comentarla en clase y volver mañana con más fuerza.");
     }
   }
 
@@ -717,64 +749,122 @@ export default function App() {
       style={{
         minHeight: "100vh",
         background:
-          "radial-gradient(circle at top, #243b55 0%, #141e30 38%, #0a0f18 100%)",
+          "radial-gradient(circle at top, #253b56 0%, #17263f 35%, #0c1320 100%)",
         color: "white",
-        padding: 24,
+        padding: presentationMode ? 16 : 24,
         fontFamily:
           'Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
       }}
     >
-      <div style={{ maxWidth: 1420, margin: "0 auto" }}>
+      <div style={{ maxWidth: presentationMode ? 1600 : 1440, margin: "0 auto" }}>
         <div
-          style={{
-            background: "linear-gradient(135deg, #1c2541, #3a506b)",
-            border: "1px solid rgba(255,255,255,0.08)",
-            borderRadius: 30,
-            padding: 26,
-            boxShadow: "0 18px 42px rgba(0,0,0,0.28)",
+          style={glassCard({
+            padding: presentationMode ? 24 : 28,
             marginBottom: 22,
-          }}
+            background: "linear-gradient(135deg, rgba(35,56,88,0.95), rgba(63,94,150,0.75))",
+          })}
         >
-          <h1
+          <div
             style={{
-              margin: 0,
-              fontSize: 42,
-              lineHeight: 1.05,
-              letterSpacing: "-0.03em",
+              display: "flex",
+              justifyContent: "space-between",
+              gap: 20,
+              alignItems: "center",
+              flexWrap: "wrap",
             }}
           >
-            Palabra del Día 📚
-          </h1>
-          <p
-            style={{
-              marginTop: 10,
-              marginBottom: 0,
-              color: "#dde4ff",
-              fontSize: 18,
-            }}
-          >
-            Una aventura alfabética para aprender una palabra nueva cada día y avanzar
-            juntos hacia una insignia de clase.
-          </p>
+            <div>
+              <h1
+                style={{
+                  margin: 0,
+                  fontSize: presentationMode ? 58 : 46,
+                  lineHeight: 1.02,
+                  letterSpacing: "-0.04em",
+                }}
+              >
+                HABLAS · Palabra del Día 📚
+              </h1>
+              <p
+                style={{
+                  marginTop: 10,
+                  marginBottom: 0,
+                  color: "#e0e7ff",
+                  fontSize: presentationMode ? 24 : 18,
+                  maxWidth: 980,
+                  lineHeight: 1.6,
+                }}
+              >
+                Una misión diaria para enriquecer el vocabulario de la clase, avanzar por el
+                abecedario y ganar insignias colectivas.
+              </p>
+            </div>
+
+            <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
+              <div
+                style={{
+                  padding: "12px 16px",
+                  borderRadius: 18,
+                  background: "rgba(255,255,255,0.1)",
+                  fontWeight: 800,
+                  color: "#f7fbff",
+                  fontSize: presentationMode ? 20 : 16,
+                }}
+              >
+                Hoy: letra {currentWord.letter}
+              </div>
+
+              <button
+                onClick={() => setPresentationMode((v) => !v)}
+                style={{
+                  padding: "12px 16px",
+                  borderRadius: 18,
+                  background: "linear-gradient(135deg, #7bdff2, #4cc9f0)",
+                  color: "#111",
+                  border: "none",
+                  fontWeight: 900,
+                  cursor: "pointer",
+                  fontSize: presentationMode ? 18 : 15,
+                }}
+              >
+                {presentationMode ? "Salir de presentación" : "Modo presentación"}
+              </button>
+            </div>
+          </div>
         </div>
 
         <div
           style={{
             display: "grid",
-            gridTemplateColumns: "1.1fr 0.9fr",
+            gridTemplateColumns: presentationMode ? "1fr" : "1.12fr 0.88fr",
             gap: 20,
             marginBottom: 22,
           }}
         >
           <div
             style={{
+              borderRadius: 30,
+              padding: presentationMode ? 30 : 24,
               background: `linear-gradient(180deg, ${currentWord.color}, #172030)`,
-              borderRadius: 28,
-              padding: 24,
-              boxShadow: "0 18px 34px rgba(0,0,0,0.26)",
+              boxShadow: "0 18px 36px rgba(0,0,0,0.28)",
               border: "2px solid rgba(255,255,255,0.08)",
+              position: "relative",
+              overflow: "hidden",
             }}
           >
+            <div
+              style={{
+                position: "absolute",
+                right: presentationMode ? -10 : -30,
+                top: presentationMode ? -20 : -30,
+                fontSize: presentationMode ? 200 : 140,
+                opacity: 0.12,
+                transform: "rotate(-10deg)",
+                pointerEvents: "none",
+              }}
+            >
+              {currentWord.icon}
+            </div>
+
             <div
               style={{
                 display: "flex",
@@ -782,18 +872,21 @@ export default function App() {
                 gap: 16,
                 alignItems: "flex-start",
                 marginBottom: 20,
+                position: "relative",
+                zIndex: 1,
               }}
             >
               <div>
                 <div
                   style={{
                     display: "inline-block",
-                    background: "rgba(255,255,255,0.16)",
+                    background: "rgba(255,255,255,0.18)",
                     padding: "8px 12px",
                     borderRadius: 999,
-                    fontWeight: 800,
+                    fontWeight: 900,
                     marginBottom: 12,
-                    fontSize: 13,
+                    fontSize: presentationMode ? 18 : 13,
+                    letterSpacing: "0.04em",
                   }}
                 >
                   LETRA {currentWord.letter}
@@ -801,9 +894,10 @@ export default function App() {
                 <h2
                   style={{
                     margin: 0,
-                    fontSize: 40,
-                    lineHeight: 1.1,
+                    fontSize: presentationMode ? 72 : 46,
+                    lineHeight: 1.02,
                     fontWeight: 900,
+                    letterSpacing: "-0.03em",
                   }}
                 >
                   {currentWord.word}
@@ -812,52 +906,74 @@ export default function App() {
 
               <div
                 style={{
-                  fontSize: 68,
+                  fontSize: presentationMode ? 110 : 76,
                   lineHeight: 1,
                   filter: "drop-shadow(0 0 10px rgba(255,255,255,0.18))",
+                  position: "relative",
+                  zIndex: 1,
                 }}
               >
                 {currentWord.icon}
               </div>
             </div>
 
-            <InfoBox title="Definición">{currentWord.definition}</InfoBox>
-
             <div
               style={{
                 display: "grid",
-                gridTemplateColumns: "1fr 1fr",
-                gap: 12,
-                marginTop: 14,
-                marginBottom: 14,
+                gap: 14,
+                position: "relative",
+                zIndex: 1,
               }}
             >
-              <InfoBox title="Sinónimos">{currentWord.synonyms.join(", ")}</InfoBox>
-              <InfoBox title="Antónimos">{currentWord.antonyms.join(", ")}</InfoBox>
-            </div>
+              <InfoBox title="Definición" icon="📖" presentationMode={presentationMode}>
+                {currentWord.definition}
+              </InfoBox>
 
-            <InfoBox title="Uso en contexto">{currentWord.context}</InfoBox>
+              <div
+                style={{
+                  display: "grid",
+                  gridTemplateColumns: presentationMode ? "1fr 1fr" : "1fr 1fr",
+                  gap: 12,
+                }}
+              >
+                <InfoBox title="Sinónimos" icon="🔁" presentationMode={presentationMode}>
+                  {currentWord.synonyms.join(", ")}
+                </InfoBox>
+                <InfoBox title="Antónimos" icon="↔️" presentationMode={presentationMode}>
+                  {currentWord.antonyms.join(", ")}
+                </InfoBox>
+              </div>
+
+              <InfoBox title="Uso en contexto" icon="💬" presentationMode={presentationMode}>
+                {currentWord.context}
+              </InfoBox>
+            </div>
 
             <div
               style={{
                 display: "flex",
                 gap: 12,
                 flexWrap: "wrap",
-                marginTop: 16,
+                marginTop: 18,
                 marginBottom: 14,
+                position: "relative",
+                zIndex: 1,
               }}
             >
               <button
                 onClick={markWordUsed}
                 style={{
-                  background: usedToday ? "#94d2bd" : "#ffd166",
+                  background: usedToday
+                    ? "linear-gradient(135deg, #95d5b2, #74c69d)"
+                    : "linear-gradient(135deg, #ffd166, #f4a261)",
                   color: "#171717",
                   border: "none",
                   borderRadius: 16,
-                  padding: "14px 18px",
-                  fontWeight: 800,
-                  fontSize: 15,
+                  padding: presentationMode ? "18px 24px" : "14px 18px",
+                  fontWeight: 900,
+                  fontSize: presentationMode ? 20 : 15,
                   cursor: "pointer",
+                  boxShadow: "0 8px 20px rgba(0,0,0,0.18)",
                 }}
               >
                 {usedToday ? "✅ Palabra trabajada hoy" : "Marcar como trabajada hoy"}
@@ -866,13 +982,13 @@ export default function App() {
               <button
                 onClick={resetClassProgress}
                 style={{
-                  background: "transparent",
+                  background: "rgba(255,255,255,0.08)",
                   color: "white",
                   border: "1px solid rgba(255,255,255,0.22)",
                   borderRadius: 16,
-                  padding: "14px 18px",
+                  padding: presentationMode ? "18px 24px" : "14px 18px",
                   fontWeight: 800,
-                  fontSize: 15,
+                  fontSize: presentationMode ? 20 : 15,
                   cursor: "pointer",
                 }}
               >
@@ -882,57 +998,63 @@ export default function App() {
 
             <div
               style={{
-                background: "rgba(255,255,255,0.08)",
+                background: "rgba(255,255,255,0.1)",
                 borderRadius: 18,
                 padding: 14,
                 color: "#eef3ff",
                 minHeight: 52,
                 display: "flex",
                 alignItems: "center",
-                fontWeight: 600,
+                fontWeight: 700,
+                fontSize: presentationMode ? 20 : 16,
+                position: "relative",
+                zIndex: 1,
               }}
             >
               {message || "Objetivo de hoy: usar la palabra varias veces durante la jornada."}
             </div>
           </div>
 
-          <div
-            style={{
-              display: "grid",
-              gap: 14,
-            }}
-          >
-            <StatCard
-              title="Progreso del abecedario"
-              value={`${currentIndex + 1} / ${words.length}`}
-              subtitle={`Vais por la letra ${currentWord.letter}`}
-            />
-            <StatCard
-              title="Insignias ganadas"
-              value={cycles}
-              subtitle={badgeName(cycles)}
-            />
-            <StatCard
-              title="Puntos de la clase"
-              value={progressState.points}
-              subtitle="+10 por palabra usada y +5 por mini reto"
-            />
-            <StatCard
-              title="Racha actual"
-              value={`${progressState.streak} día${progressState.streak === 1 ? "" : "s"}`}
-              subtitle="Días seguidos usando la palabra"
-            />
-          </div>
+          {!presentationMode && (
+            <div
+              style={{
+                display: "grid",
+                gap: 14,
+              }}
+            >
+              <StatCard
+                title="Progreso del abecedario"
+                value={`${currentIndex + 1} / ${words.length}`}
+                subtitle={`Vais por la letra ${currentWord.letter}`}
+                accent="rgba(87,117,144,0.35)"
+              />
+              <StatCard
+                title="Insignias ganadas"
+                value={cycles}
+                subtitle={badgeName(cycles)}
+                accent="rgba(255,209,102,0.22)"
+              />
+              <StatCard
+                title="Puntos de la clase"
+                value={progressState.points}
+                subtitle="+10 por palabra usada y +5 por mini reto"
+                accent="rgba(76,201,240,0.22)"
+              />
+              <StatCard
+                title="Racha actual"
+                value={`${progressState.streak} día${progressState.streak === 1 ? "" : "s"}`}
+                subtitle="Días seguidos usando la palabra"
+                accent="rgba(67,170,139,0.22)"
+              />
+            </div>
+          )}
         </div>
 
         <div
-          style={{
-            background: "rgba(255,255,255,0.06)",
-            border: "1px solid rgba(255,255,255,0.08)",
-            borderRadius: 24,
+          style={glassCard({
             padding: 20,
             marginBottom: 22,
-          }}
+          })}
         >
           <div
             style={{
@@ -944,19 +1066,27 @@ export default function App() {
               flexWrap: "wrap",
             }}
           >
-            <h2 style={{ margin: 0 }}>Camino hacia la insignia 🏅</h2>
-            <div style={{ color: "#d3daf6", fontWeight: 700 }}>
+            <SectionTitle presentationMode={presentationMode}>
+              Camino hacia la insignia 🏅
+            </SectionTitle>
+            <div
+              style={{
+                color: "#d3daf6",
+                fontWeight: 800,
+                fontSize: presentationMode ? 22 : 16,
+              }}
+            >
               {Math.round(progress)}% completado en esta vuelta
             </div>
           </div>
 
           <div
             style={{
-              height: 18,
+              height: presentationMode ? 24 : 20,
               background: "rgba(255,255,255,0.08)",
               borderRadius: 999,
               overflow: "hidden",
-              marginBottom: 16,
+              marginBottom: 18,
             }}
           >
             <div
@@ -965,6 +1095,7 @@ export default function App() {
                 height: "100%",
                 background: "linear-gradient(90deg, #ffd166, #06d6a0)",
                 borderRadius: 999,
+                boxShadow: "0 0 18px rgba(6,214,160,0.25)",
               }}
             />
           </div>
@@ -988,7 +1119,7 @@ export default function App() {
                   key={item.letter}
                   style={{
                     borderRadius: 18,
-                    padding: 12,
+                    padding: presentationMode ? 16 : 12,
                     textAlign: "center",
                     background: isCurrent
                       ? "linear-gradient(135deg, #ffd166, #f4a261)"
@@ -997,15 +1128,18 @@ export default function App() {
                       : "rgba(255,255,255,0.05)",
                     color: isCurrent ? "#1b1b1b" : "white",
                     border: isCurrent
-                      ? "2px solid rgba(255,255,255,0.5)"
+                      ? "2px solid rgba(255,255,255,0.55)"
                       : worked
-                      ? "2px solid rgba(6,214,160,0.5)"
+                      ? "2px solid rgba(6,214,160,0.45)"
                       : "1px solid rgba(255,255,255,0.08)",
-                    fontWeight: 800,
+                    fontWeight: 900,
+                    boxShadow: isCurrent ? "0 8px 18px rgba(0,0,0,0.18)" : "none",
                   }}
                 >
-                  <div style={{ fontSize: 24, marginBottom: 6 }}>{item.icon}</div>
-                  <div style={{ fontSize: 18 }}>{item.letter}</div>
+                  <div style={{ fontSize: presentationMode ? 34 : 24, marginBottom: 6 }}>
+                    {item.icon}
+                  </div>
+                  <div style={{ fontSize: presentationMode ? 22 : 18 }}>{item.letter}</div>
                 </div>
               );
             })}
@@ -1015,29 +1149,34 @@ export default function App() {
         <div
           style={{
             display: "grid",
-            gridTemplateColumns: "1fr 1fr",
+            gridTemplateColumns: presentationMode ? "1fr" : "1fr 1fr",
             gap: 20,
           }}
         >
           <div
-            style={{
-              background: "rgba(255,255,255,0.06)",
-              border: "1px solid rgba(255,255,255,0.08)",
-              borderRadius: 24,
+            style={glassCard({
               padding: 20,
-            }}
+            })}
           >
-            <h2 style={{ marginTop: 0 }}>Mini reto del día 🎯</h2>
+            <SectionTitle presentationMode={presentationMode}>
+              Mini reto del día 🎯
+            </SectionTitle>
 
             <div
-              style={{
+              style={glassCard({
+                padding: presentationMode ? 22 : 16,
                 background: "rgba(255,255,255,0.05)",
-                borderRadius: 18,
-                padding: 16,
                 marginBottom: 14,
-              }}
+              })}
             >
-              <div style={{ fontWeight: 800, marginBottom: 8 }}>
+              <div
+                style={{
+                  fontWeight: 900,
+                  marginBottom: 10,
+                  fontSize: presentationMode ? 28 : 18,
+                  lineHeight: 1.35,
+                }}
+              >
                 {currentWord.challenge.question}
               </div>
 
@@ -1050,17 +1189,19 @@ export default function App() {
                       textAlign: "left",
                       background:
                         selectedOption === index
-                          ? "rgba(255,209,102,0.28)"
+                          ? "linear-gradient(135deg, rgba(255,209,102,0.34), rgba(244,162,97,0.26))"
                           : "rgba(255,255,255,0.06)",
                       color: "white",
                       border:
                         selectedOption === index
                           ? "2px solid #ffd166"
                           : "1px solid rgba(255,255,255,0.08)",
-                      borderRadius: 14,
-                      padding: "12px 14px",
-                      fontWeight: 700,
+                      borderRadius: 16,
+                      padding: presentationMode ? "18px 20px" : "14px 16px",
+                      fontWeight: 800,
+                      fontSize: presentationMode ? 22 : 16,
                       cursor: "pointer",
+                      transition: "all 0.2s ease",
                     }}
                   >
                     {option}
@@ -1072,13 +1213,17 @@ export default function App() {
                 onClick={checkChallenge}
                 style={{
                   marginTop: 14,
-                  background: challengeSolvedToday ? "#94d2bd" : "#7bdff2",
+                  background: challengeSolvedToday
+                    ? "linear-gradient(135deg, #95d5b2, #74c69d)"
+                    : "linear-gradient(135deg, #7bdff2, #4cc9f0)",
                   color: "#171717",
                   border: "none",
-                  borderRadius: 14,
-                  padding: "12px 16px",
-                  fontWeight: 800,
+                  borderRadius: 16,
+                  padding: presentationMode ? "16px 22px" : "12px 16px",
+                  fontWeight: 900,
+                  fontSize: presentationMode ? 20 : 15,
                   cursor: "pointer",
+                  boxShadow: "0 8px 20px rgba(0,0,0,0.16)",
                 }}
               >
                 {challengeSolvedToday ? "✅ Reto ya superado hoy" : "Comprobar respuesta"}
@@ -1089,89 +1234,145 @@ export default function App() {
                   marginTop: 12,
                   color: "#dce3ff",
                   minHeight: 24,
-                  fontWeight: 600,
+                  fontWeight: 700,
+                  lineHeight: 1.5,
+                  fontSize: presentationMode ? 20 : 16,
                 }}
               >
                 {challengeFeedback}
               </div>
             </div>
 
-            <div
-              style={{
-                background: "rgba(255,255,255,0.05)",
-                borderRadius: 18,
-                padding: 16,
-              }}
-            >
-              <div style={{ fontWeight: 800, marginBottom: 8 }}>Cómo usar este reto</div>
-              <div style={{ color: "#dce3ff", lineHeight: 1.6 }}>
-                Leed la palabra, comentad su significado y votad en grupo cuál es la respuesta
-                correcta. Si acertáis, sumáis puntos extra para la clase.
-              </div>
-            </div>
+            <InfoBox title="Cómo usar este reto" icon="🧩" presentationMode={presentationMode}>
+              Leed la palabra, comentad su significado y votad en grupo cuál es la respuesta
+              correcta. Si acertáis, sumáis puntos extra para la clase.
+            </InfoBox>
           </div>
 
-          <div
-            style={{
-              background: "rgba(255,255,255,0.06)",
-              border: "1px solid rgba(255,255,255,0.08)",
-              borderRadius: 24,
-              padding: 20,
-            }}
-          >
-            <h2 style={{ marginTop: 0 }}>Historial reciente</h2>
-
+          {!presentationMode && (
             <div
               style={{
-                background: "rgba(255,255,255,0.05)",
-                borderRadius: 18,
-                padding: 16,
-                marginBottom: 14,
+                display: "grid",
+                gap: 20,
               }}
             >
-              <div style={{ fontWeight: 800, marginBottom: 8 }}>Palabras trabajadas</div>
-              <div style={{ color: "#dce3ff", lineHeight: 1.6 }}>
-                La clase ha trabajado <strong>{wordsWorkedCount}</strong> palabra
-                {wordsWorkedCount === 1 ? "" : "s"} en este navegador.
-              </div>
-            </div>
-
-            {recentHistory.length === 0 ? (
               <div
-                style={{
-                  background: "rgba(255,255,255,0.05)",
-                  borderRadius: 18,
-                  padding: 16,
-                  color: "#dce3ff",
-                }}
+                style={glassCard({
+                  padding: 20,
+                })}
               >
-                Todavía no hay historial. Marca la palabra de hoy cuando la trabajéis en clase.
+                <SectionTitle>Próximas palabras</SectionTitle>
+                {upcomingWords.map((item) => (
+                  <div
+                    key={item.letter}
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 14,
+                      background: "rgba(255,255,255,0.05)",
+                      borderRadius: 18,
+                      padding: 14,
+                      marginBottom: 10,
+                    }}
+                  >
+                    <div
+                      style={{
+                        width: 46,
+                        height: 46,
+                        borderRadius: 14,
+                        display: "grid",
+                        placeItems: "center",
+                        background: "rgba(255,255,255,0.08)",
+                        fontSize: 24,
+                      }}
+                    >
+                      {item.icon}
+                    </div>
+                    <div>
+                      <div style={{ fontWeight: 900 }}>
+                        {item.letter} · {item.word}
+                      </div>
+                      <div style={{ color: "#d3daf6", fontSize: 14, lineHeight: 1.5 }}>
+                        {item.definition}
+                      </div>
+                    </div>
+                  </div>
+                ))}
               </div>
-            ) : (
-              recentHistory.map((item, index) => (
+
+              <div
+                style={glassCard({
+                  padding: 20,
+                })}
+              >
+                <SectionTitle>Historial reciente</SectionTitle>
+
                 <div
-                  key={`${item.date}-${index}`}
                   style={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    gap: 12,
                     background: "rgba(255,255,255,0.05)",
                     borderRadius: 18,
-                    padding: 14,
-                    marginBottom: 10,
+                    padding: 16,
+                    marginBottom: 14,
                   }}
                 >
-                  <div>
-                    <div style={{ fontWeight: 800 }}>
-                      {item.letter} · {item.word}
-                    </div>
-                    <div style={{ color: "#d3daf6", fontSize: 14 }}>{item.date}</div>
+                  <div style={{ fontWeight: 900, marginBottom: 8 }}>Palabras trabajadas</div>
+                  <div style={{ color: "#dce3ff", lineHeight: 1.6 }}>
+                    La clase ha trabajado <strong>{wordsWorkedCount}</strong> palabra
+                    {wordsWorkedCount === 1 ? "" : "s"} en este navegador.
                   </div>
-                  <div style={{ fontSize: 24 }}>✅</div>
                 </div>
-              ))
-            )}
-          </div>
+
+                {recentHistory.length === 0 ? (
+                  <div
+                    style={{
+                      background: "rgba(255,255,255,0.05)",
+                      borderRadius: 18,
+                      padding: 16,
+                      color: "#dce3ff",
+                    }}
+                  >
+                    Todavía no hay historial. Marca la palabra de hoy cuando la trabajéis en clase.
+                  </div>
+                ) : (
+                  recentHistory.map((item, index) => (
+                    <div
+                      key={`${item.date}-${index}`}
+                      style={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                        gap: 12,
+                        background: "rgba(255,255,255,0.05)",
+                        borderRadius: 18,
+                        padding: 14,
+                        marginBottom: 10,
+                        alignItems: "center",
+                      }}
+                    >
+                      <div>
+                        <div style={{ fontWeight: 900 }}>
+                          {item.letter} · {item.word}
+                        </div>
+                        <div style={{ color: "#d3daf6", fontSize: 14 }}>{item.date}</div>
+                      </div>
+                      <div
+                        style={{
+                          width: 38,
+                          height: 38,
+                          borderRadius: 12,
+                          display: "grid",
+                          placeItems: "center",
+                          background: "rgba(6,214,160,0.16)",
+                          fontSize: 20,
+                        }}
+                      >
+                        ✅
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>
